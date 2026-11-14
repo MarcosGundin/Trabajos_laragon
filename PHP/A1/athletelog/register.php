@@ -3,11 +3,6 @@
 
     require_once __DIR__ . '/includes/bootstrap.php';
 
-    // Se inicia la sesion solo si no estaba iniciada ya, porque el token csrf se guarda en $_SESSION.
-    if (session_status() !== PHP_SESSION_ACTIVE) {
-        session_start();
-    }
-
     // Token CSRF: se crea una sola vez por sesion y se mete en un campo oculto del formulario.
     // Cuando se envia se comprueba que coincida, asi nos aseguramos de que el POST viene de
     // nuestro formulario y no de otra web.

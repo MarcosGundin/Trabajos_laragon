@@ -36,4 +36,141 @@
         ? '<span class="field-error" role="alert">' . e($errors[$field]) . '</span>'
         : '';
 }
+    // Coge un campo de $_POST como texto. Si no existe, o llega como array porque
+    // alguien ha toqueteado el formulario, devuelve una cadena vacia. Quita los
+    // espacios de los lados con trim.
+    function obtenerTexto(string $campo): string
+    {
+        $dato = $_POST[$campo] ?? '';
+        return is_string($dato) ? trim($dato) : '';
+    }
+    // Si no hay usuario en la sesion redirige al login. El exit es para que la
+    // pagina no siga ejecutandose despues de mandar la redireccion.
+    function requireLogin(): void
+    {
+        if (!isset($_SESSION['user'])) {
+            header('Location: login.php');
+            exit;
+        }
+    }
+    // Crea una cookie. Para borrarla se le pasa una caducidad que ya haya pasado.
+    // path / hace que valga en toda la web, httponly impide que JavaScript la lea y
+    // samesite evita que se mande en peticiones POST que vengan de otras webs.
+    function establecerCookie(string $nombre, string $valor, int $caduca): void
+    {
+        setcookie($nombre, $valor, [
+            'expires' => $caduca,
+            'path' => '/',
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+    }
+    function cookieOpcion(string $nombre, array $opciones, string $porDefecto): string
+    {
+        $guardado = $_COOKIE[$nombre] ?? '';
+        if (is_string($guardado) && array_key_exists($guardado, $opciones)) {
+            return $guardado;
+        }
+        return $porDefecto;
+    }
+
+    // Tema que hay que aplicar (claro por defecto)
+    function temaActual(): string
+    {
+        return cookieOpcion('tema', OPCIONES_TEMA, 'light');
+    }
+    // Suma una visita a la cookie visits. Tambien actualizo $_COOKIE a mano para que
+    // el footer de esta misma peticion ya enseñe el numero nuevo.
+    function sumarVisita(): void
+    {
+        $previas = $_COOKIE['visits'] ?? '0';
+        $total = (is_string($previas) ? max(0, (int) $previas) : 0) + 1;
+
+        establecerCookie('visits', (string) $total, time() + VIDA_COOKIE);
+        $_COOKIE['visits'] = (string) $total;
+    }
+
+    // Comprueba los datos de un entrenamiento y devuelve una lista con los mensajes
+    // de error. Si la lista viene vacia es que esta todo correcto.
+    function validateTraining(array $input): array
+    {
+        $fallos = [];
+
+        // Fecha: obligatoria, real y que no sea de un dia futuro.
+        // Los textos Y-m-d se pueden comparar con > porque se ordenan como fechas.
+        $dia = $input['date'];
+        if ($dia === '') {
+            $fallos[] = 'La fecha es obligatoria.';
+        } else {
+            $objetoFecha = DateTimeImmutable::createFromFormat('!Y-m-d', $dia);
+            if ($objetoFecha === false || $objetoFecha->format('Y-m-d') !== $dia) {
+                $fallos[] = 'La fecha no es válida.';
+            } elseif ($dia > date('Y-m-d')) {
+                $fallos[] = 'La fecha no puede ser futura.';
+            }
+        }
+
+        // Tipo: tiene que ser una de las claves de TIPOS_SESION
+        if (!array_key_exists($input['type'], TIPOS_SESION)) {
+            $fallos[] = 'Elige un tipo de sesión válido.';
+        }
+
+        // Duracion: entero entre 5 y 360
+        $minutos = filter_var($input['duration'], FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => MINUTOS_MIN, 'max_range' => MINUTOS_MAX],
+        ]);
+        if ($minutos === false) {
+            $fallos[] = 'La duración debe ser un entero entre ' . MINUTOS_MIN . ' y ' . MINUTOS_MAX . ' minutos.';
+        }
+
+        // RPE: entero entre 1 y 10
+        $esfuerzo = filter_var($input['rpe'], FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => ESFUERZO_MIN, 'max_range' => ESFUERZO_MAX],
+        ]);
+        if ($esfuerzo === false) {
+            $fallos[] = 'El esfuerzo percibido (RPE) debe ser un entero entre ' . ESFUERZO_MIN . ' y ' . ESFUERZO_MAX . '.';
+        }
+
+        // Sensaciones: opcionales, con un maximo de 200 caracteres
+        if (mb_strlen($input['notes']) > LIMITE_SENSACIONES) {
+            $fallos[] = 'Las sensaciones no pueden pasar de ' . LIMITE_SENSACIONES . ' caracteres.';
+        }
+
+        // Lesion: si marca la casilla tiene que explicar que le pasa
+        if ($input['injury_checked'] && $input['injury'] === '') {
+            $fallos[] = 'Has marcado lesión o molestia, tienes que describirla.';
+        }
+
+        return $fallos;
+    }
+
+    // Carga de la sesion: minutos multiplicados por el esfuerzo percibido
+    function calculateLoad(int $duration, int $rpe): int
+    {
+        return $duration * $rpe;
+    }
+    // Calcula las estadisticas a partir del array de entrenamientos y las devuelve
+    // juntas en un array: total de sesiones, minutos, RPE medio y carga total.
+    function resumenEntrenamientos(array $sesiones): array
+    {
+        $cuantas = count($sesiones);
+        $minutosSumados = array_sum(array_column($sesiones, 'duration'));
+
+        $cargaSumada = 0;
+        foreach ($sesiones as $s) {
+            $cargaSumada += calculateLoad($s['duration'], $s['rpe']);
+        }
+
+        // Si todavia no hay sesiones no se puede dividir, y la media es 0
+        $media = $cuantas > 0
+            ? array_sum(array_column($sesiones, 'rpe')) / $cuantas
+            : 0;
+
+        return [
+            'total' => $cuantas,
+            'minutos' => $minutosSumados,
+            'esfuerzo_medio' => round($media, 1),
+            'carga' => $cargaSumada,
+        ];
+    }
 ?>

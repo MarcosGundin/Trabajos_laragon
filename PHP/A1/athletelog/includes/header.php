@@ -18,7 +18,7 @@ function renderHeader(string $title): void
     <link rel="stylesheet" href="assets/css/styles.css">
     <title><?= e(pageTitle) ?></title>
 </head>
-<body>
+<body class="theme-<?= e(temaActual()) ?>">
 <?php
 }
 ?>
