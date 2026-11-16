@@ -22,16 +22,6 @@
         'preferences.php' => 'Preferencias',
     ];
     
-    // Limites que se usan en las validaciones del registro y tambien en los atributos
-    // maxlength, min y max del formulario, de esta forma estan definidos en un solo sitio.
-    const NOMBRE_MIN = 3;
-    const NOMBRE_MAX = 50;
-    const USUARIO_MIN = 4;
-    const USUARIO_MAX = 15;
-    const CONTRASENA_MIN = 8;
-    const EDAD_MIN = 16;
-    const EDAD_MAX = 60;
-
      // Cuanto viven las cookies: 30 dias, en segundos
     const VIDA_COOKIE = 60 * 60 * 24 * 30;
 
@@ -41,6 +31,7 @@
     const OPCIONES_TEMA = [
         'light' => 'Claro',
         'dark' => 'Oscuro',
+        'pink' => 'Rosa',
     ];
 
     const OPCIONES_UNIDAD = [

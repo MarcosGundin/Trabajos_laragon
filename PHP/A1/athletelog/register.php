@@ -3,6 +3,20 @@
 
     require_once __DIR__ . '/includes/bootstrap.php';
 
+    /** @var array $sports Definida en includes/data.php */
+    /** @var array $days Definida en includes/data.php */
+    /** @var array $levels Definida en includes/data.php */
+
+    // Limites que se usan en las validaciones del registro y tambien en los atributos
+    // maxlength, min y max del formulario, de esta forma estan definidos en un solo sitio.
+    const NOMBRE_MIN = 3;
+    const NOMBRE_MAX = 50;
+    const USUARIO_MIN = 4;
+    const USUARIO_MAX = 15;
+    const CONTRASENA_MIN = 8;
+    const EDAD_MIN = 16;
+    const EDAD_MAX = 60;
+
     // Token CSRF: se crea una sola vez por sesion y se mete en un campo oculto del formulario.
     // Cuando se envia se comprueba que coincida, asi nos aseguramos de que el POST viene de
     // nuestro formulario y no de otra web.

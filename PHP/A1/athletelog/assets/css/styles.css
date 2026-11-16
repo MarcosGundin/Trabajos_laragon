@@ -37,6 +37,22 @@
     --exito-texto: #A6E3B6;
 }
 
+.theme-pink {
+    --fondo: #e92289;
+    --superficie: #ffffff;
+    --texto: #26364A;
+    --texto-suave: #526174;
+    --titulo: #102B4E;
+    --borde: #E2EAF3;
+    --borde-campo: #CDD8E5;
+    --campo: #FAFCFF;
+    --tabla-cabecera: #102B4E;
+    --fila-hover: #F0F6FD;
+    --error-fondo: #FDECEA;
+    --error-texto: #8A1C14;
+    --exito-fondo: #E6F4EA;
+    --exito-texto: #0D5C25;
+}
 /* =========================
    GENERAL
 ========================= */

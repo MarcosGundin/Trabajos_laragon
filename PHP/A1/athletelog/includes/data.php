@@ -1,9 +1,10 @@
 <?php 
 declare(strict_types=1);
 
-// Array asociativo con los deportes. La clave es un identificador interno (por ejemplo
+// Array asociativo cuyos elementos son asociativos con los deportes. La clave es un identificador interno (por ejemplo
 // 'running') y dentro de cada deporte se guarda su nombre, su categoria (individual o
 // equipo) y la unidad en la que se mide el entrenamiento.
+
 $sports = [
     'running' => [
         'name' => 'Running',

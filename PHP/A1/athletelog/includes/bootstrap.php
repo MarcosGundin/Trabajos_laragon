@@ -4,7 +4,9 @@
 
     // Arranco la sesion aqui, una sola vez. Como cada pagina carga este archivo
     // antes que nada, $_SESSION ya existe en cualquier sitio.
-    session_start();
+    if (session_status() !== PHP_SESSION_ACTIVE){
+        session_start();
+    };
 
     // Este archivo junta todos los demas. Cada pagina solo tiene que hacer require_once de
     // bootstrap.php y ya puede usar las constantes, los arrays y las funciones de abajo.

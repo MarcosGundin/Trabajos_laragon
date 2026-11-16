@@ -2,9 +2,10 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/includes/bootstrap.php';
+/** @var array $sports Definida en includes/data.php */
+requireLogin();
 
-renderHeader('Inicio');
-
+renderHeader();
 renderNavbar('Navbar');
 
 // Se separan los deportes en dos arrays segun su categoria para pintar una tabla de cada tipo.

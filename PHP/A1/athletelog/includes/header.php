@@ -7,7 +7,7 @@ require_once __DIR__ . '/bootstrap.php';
 // charset, el viewport y el enlace al archivo de estilos, y abre el body. Asi no hay que
 // repetir todo este HTML en cada pagina, solo se llama a renderHeader() al principio.
 // El body se cierra en renderFooter().
-function renderHeader(string $title): void
+function renderHeader(): void
 {
 ?>
 <!DOCTYPE html>
