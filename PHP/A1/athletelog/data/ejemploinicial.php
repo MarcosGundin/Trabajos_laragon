@@ -21,7 +21,7 @@ function readTrainings(string $file, string $username): array
     while (($fila = fgetcsv($h)) !== false) {
         $training = array_combine($cabeceras, $fila);
 
-        if ($training['username'] == $username) {
+        if ($fila[0] == $username) {
             $result[] = $training;
         }
     }
