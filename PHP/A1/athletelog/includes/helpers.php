@@ -6,6 +6,37 @@
     {
         return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
     }
+  
+    // Genera un token CSRF para la sesion actual
+    function generateCsrfToken(): string
+    {
+        if (!isset($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+
+        return $_SESSION['csrf_token'];
+    }
+
+    // Devuelve el campo oculto con el token CSRF para incluirlo en los formularios.
+    function csrfField(): string
+    {
+        return '<input type="hidden" name="csrf_token" value="' . e(generateCsrfToken()) . '">';
+    }
+
+    // Comprueba si el token recibido coincide con el guardado en la sesion.
+    function verifyCsrfToken(?string $token): bool
+    {
+        if (
+            !isset($_SESSION['csrf_token']) ||
+            !is_string($_SESSION['csrf_token']) ||
+            $token === null
+        ) {
+            return false;
+        }
+
+        return hash_equals($_SESSION['csrf_token'], $token);
+    }
+
     // Sirve para saber si un enlace del menu es el de la pagina actual. Compara el archivo del
     // enlace con el archivo en el que estamos y, si coinciden, devuelve el atributo
     // class="activo" para que el CSS lo pinte distinto. Si no coinciden devuelve un texto vacio.
@@ -172,5 +203,77 @@
             'esfuerzo_medio' => round($media, 1),
             'carga' => $cargaSumada,
         ];
+    }
+
+        // ---- PASO 7: csv ----
+    // readTrainings y escribir_csv las cogi de data/ejemploinicial.php y las adapte.
+
+    // Si el fichero no existe lo creo con la cabecera
+    function crearFicheroSiNoExiste(string $file): void
+    {
+        if (!file_exists($file)) {
+            $h = @fopen($file, 'w'); // la @ es para que no salga el warning de PHP
+            if ($h !== false) {
+                fputcsv($h, ['username', 'date', 'type', 'duration', 'rpe', 'notes', 'injury']);
+                fclose($h);
+            }
+        }
+    }
+
+    // Lee el csv y devuelve solo las filas del usuario, cada una como array asociativo
+    function readTrainings(string $file, string $username): array
+    {
+        $result = [];
+
+        crearFicheroSiNoExiste($file);
+        $h = @fopen($file, 'r');
+
+        if ($h === false) {
+            // en vez de echo y exit lanzo una excepcion y la pagina enseña el mensaje
+            throw new Exception('No se ha podido abrir el fichero de entrenamientos.');
+        }
+
+        flock($h, LOCK_SH);
+
+        $cabeceras = fgetcsv($h); // la primera linea es la cabecera, asi que la salto
+        while (($fila = fgetcsv($h)) !== false) {
+            // si la fila esta rota o en blanco la salto, si no array_combine da error
+            if (count($fila) !== count($cabeceras)) {
+                continue;
+            }
+
+            $training = array_combine($cabeceras, $fila);
+
+            if ($training['username'] === $username) {
+                // del csv todo llega como texto, lo paso a int para calculateLoad
+                $training['duration'] = (int) $training['duration'];
+                $training['rpe'] = (int) $training['rpe'];
+                $result[] = $training;
+            }
+        }
+
+        flock($h, LOCK_UN);
+        fclose($h);
+
+        return $result;
+    }
+
+    // Añade una fila al final del csv. Devuelve false si no se ha podido escribir
+    function escribir_csv(string $file, array $registro): bool
+    {
+        crearFicheroSiNoExiste($file);
+        $h = @fopen($file, 'a');
+
+        if ($h === false) {
+            return false;
+        }
+
+        flock($h, LOCK_EX); // cojo la llave
+        fputcsv($h, $registro);
+        flock($h, LOCK_UN); // devuelvo la llave
+
+        fclose($h);
+
+        return true;
     }
 ?>

@@ -187,7 +187,7 @@
         <?php endif; ?>
 
         <form action="<?= e($_SERVER['SCRIPT_NAME']) ?>" method="post" novalidate>
-            <input type="hidden" name="csrf" value="<?= e($_SESSION['csrf']) ?>">
+            <?= csrfField() ?>
 
             <p>
                 <label for="nombre">Nombre completo: </label>

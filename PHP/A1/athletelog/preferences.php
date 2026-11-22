@@ -82,6 +82,7 @@ renderNavbar('Navbar');
     <?php endif; ?>
 
     <form action="<?= e($_SERVER['SCRIPT_NAME']) ?>" method="post" novalidate>
+        <?= csrfField() ?>
         <fieldset>
             <legend>Tema</legend>
             <?php foreach (OPCIONES_TEMA as $clave => $etiqueta): ?>

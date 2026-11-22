@@ -13,16 +13,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $claveBruta = $_POST['password'] ?? '';
     $claveIntroducida = is_string($claveBruta) ? $claveBruta : '';
 
-    // Busco al usuario en $users. Si no esta, $ficha se queda en null
+    // Busco al usuario en $users.
     $ficha = $users[$nombreIntroducido] ?? null;
 
-    // Las dos comprobaciones van en el mismo if para que el mensaje de error
-    // sea siempre el mismo y no se sepa si fallo el usuario o la contraseña
+    // Compruebo el usuario y la contraseña.
     if ($ficha !== null && password_verify($claveIntroducida, $ficha['password_hash'])) {
-        // Cambio el id de sesion al entrar. El true elimina la sesion anterior
+
+        // Regenero el identificador de la sesión.
         session_regenerate_id(true);
 
-        // Guardo lo justo en la sesion, nunca el hash
+        // Regenero también el token CSRF.
+        unset($_SESSION['csrf_token']);
+        generateCsrfToken();
+
+        // Guardo los datos del usuario en la sesión.
         $_SESSION['user'] = [
             'username' => $nombreIntroducido,
             'name' => $ficha['name'],
@@ -50,6 +54,7 @@ renderNavbar('Navbar');
     <?php endif; ?>
 
     <form action="<?= e($_SERVER['SCRIPT_NAME']) ?>" method="post" novalidate>
+        <?= csrfField() ?>
         <p>
             <label for="usuario">Usuario: </label>
             <input type="text" name="usuario" id="usuario"

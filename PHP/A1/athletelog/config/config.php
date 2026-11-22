@@ -52,4 +52,13 @@
     const ESFUERZO_MIN = 1;
     const ESFUERZO_MAX = 10;
     const LIMITE_SENSACIONES = 200;
+
+    //fichero donde se guardan los entrenamientos y su cabecera. La cabecera
+    // la tengo en una constante para usarla al crear el fichero y para el CSV que se descarga.
+    const FICHERO_ENTRENAMIENTOS = __DIR__ . '/../data/trainings.csv';
+    const CABECERA_CSV = ['username', 'date', 'type', 'duration', 'rpe', 'notes', 'injury'];
+
+    const CSRF_ACTIVADO = true;
+
+    const SESION_SAMESITE = 'Lax';
 ?>

@@ -33,30 +33,25 @@ function readTrainings(string $file, string $username): array
 //funcion escribir un registro al fichero csv
 function escribir_csv(string $file, array $registro): bool
 {
+    if (!crearCsvSiNoExiste($file)) {
+        return false;
+    }
+
     //Escribir un nuevo registro
-    $h = fopen($file, 'a');
+    $h = @fopen($file, 'a');
 
     if ($h === false) {
-        //gestiono error
-        echo 'No se pudo abrir el fichero';
+        //gestiono error: la pagina enseña el mensaje
         return false;
     }
 
     flock($h, LOCK_EX); //1. cojo la llave
     fputcsv($h, $registro); //escribe en el fichero
+    fflush($h); //vacio el buffer antes de devolver la llave
     flock($h, LOCK_UN); //2. Devuelvo la llave
 
     fclose($h);
 
     return true;
 }
-$resultado = readTrainings($file_route, 'laura88');
-print_r($resultado);
- $nuevo_registro = ['pablo', '2026-11-14', 'Movilidad', 30, 3, 'sesión suave',];
-
-if(escribir_csv($file_route, $nuevo_registro)) {
-    echo '<br> Registro añadido';
-};
-$resultado = readTrainings($file_route, 'laura88');
-print_r($resultado);
 ?>

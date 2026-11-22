@@ -32,29 +32,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 2. Lo valido
     $fallos = validateTraining($datosForm);
 
-    // 3. Si no hay fallos monto el entrenamiento y lo guardo en la sesion
+    // 3. Si no hay fallos lo guardo en el csv (antes era la sesion)
     if ($fallos === []) {
-        // duration y rpe pasan a int porque del formulario llegan como texto.
-        // Si la casilla de lesion no estaba marcada se guarda vacio.
-        $nuevaSesion = [
-            'date' => $datosForm['date'],
-            'type' => $datosForm['type'],
-            'duration' => (int) $datosForm['duration'],
-            'rpe' => (int) $datosForm['rpe'],
-            'notes' => $datosForm['notes'],
-            'injury' => $datosForm['injury_checked'] ? $datosForm['injury'] : '',
-        ];
+        $guardado = escribir_csv('data/trainings.csv', [
+            $_SESSION['user']['username'],
+            $datosForm['date'],
+            $datosForm['type'],
+            (int) $datosForm['duration'],
+            (int) $datosForm['rpe'],
+            $datosForm['notes'],
+            $datosForm['injury_checked'] ? $datosForm['injury'] : '',
+        ]);
 
-        // Con [] se añade al final: en la sesion queda un array de arrays
-        $_SESSION['trainings'][] = $nuevaSesion;
+        if ($guardado) {
+            // Recargo la pagina para que F5 no vuelva a guardar el mismo entrenamiento
+            header('Location: training.php?guardado=1');
+            exit;
+        }
 
-        // Recargo la pagina para que F5 no vuelva a guardar el mismo entrenamiento
-        header('Location: training.php?guardado=1');
-        exit;
+        $fallos[] = 'No hemos podido guardar el entrenamiento, prueba otra vez mas tarde.';
     }
 }
 
-$listaSesiones = $_SESSION['trainings'] ?? [];
+// Ahora la lista sale del csv y no de la sesion
+$listaSesiones = [];
+try {
+    $listaSesiones = readTrainings('data/trainings.csv', $_SESSION['user']['username']);
+} catch (Exception $e) {
+    $fallos[] = $e->getMessage();
+}
 $resumen = resumenEntrenamientos($listaSesiones);
 
 renderHeader('Nuevo entrenamiento');
@@ -79,6 +85,7 @@ renderNavbar('Navbar');
     <?php endif; ?>
 
     <form action="<?= e($_SERVER['SCRIPT_NAME']) ?>" method="post" novalidate>
+        <?= csrfField() ?>
         <p>
             <label for="fecha_sesion">Fecha: </label>
             <input type="date" name="fecha_sesion" id="fecha_sesion"
