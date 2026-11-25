@@ -140,6 +140,16 @@
             $errores[] = 'Debes aceptar el tratamiento de tus datos.';
         }
 
+        if (empty($errores)) {
+            $newUser = [
+            'username' => $usuario,
+            'name' => $nombre,
+            'password' =>password_hash($password, PASSWORD_DEFAULT),
+            'sport' => $deporte
+        ];
+        
+        };
+
         // Si no hay ningun error el registro es correcto. La contraseña nunca se guarda en
         // texto plano: password_hash crea un hash con sal que mas adelante se comprobara en el
         // login con password_verify. Por ahora no se guarda en ningun sitio.

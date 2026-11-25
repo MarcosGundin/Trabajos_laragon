@@ -33,7 +33,7 @@ function readTrainings(string $file, string $username): array
 //funcion escribir un registro al fichero csv
 function escribir_csv(string $file, array $registro): bool
 {
-    if (!crearCsvSiNoExiste($file)) {
+    if (!crearFicheroSiNoExiste($file)) {
         return false;
     }
 

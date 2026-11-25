@@ -61,4 +61,6 @@
     const CSRF_ACTIVADO = true;
 
     const SESION_SAMESITE = 'Lax';
+
+    const USERS_FILE = __DIR__ . '/../data/users.csv';
 ?>
